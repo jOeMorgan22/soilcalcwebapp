@@ -6,8 +6,11 @@ import com.soilwebapp.requestobj.UserLoginRequest;
 import com.soilwebapp.requestobj.UserRegistrationRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.WebContentInterceptor;
+import org.springframework.web.servlet.support.WebContentGenerator;
 
 import javax.naming.AuthenticationException;
+import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -37,7 +40,7 @@ public class AppUserService {
                 .newHttpClient()
                 .send(request, HttpResponse.BodyHandlers.ofString());
         if(response.statusCode() == 404){
-            return "fuck shit";
+            return "This is awkward. Please try again.";
         }
         if(response.statusCode() == 409){
             throw new DataIntegrityViolationException("Username is taken");
@@ -53,6 +56,8 @@ public class AppUserService {
     public String loginUser(UserLoginRequest userLoginRequest) throws IOException, InterruptedException,
             AuthenticationException {
         Gson gson = new Gson();
+        WebContentInterceptor webContentInterceptor = new WebContentInterceptor();
+
         HttpRequest loginRequest = HttpRequest.newBuilder()
                 //.header("Content-Type", "application/json")
                 .header("Authorization", getAuthenticationHeader(userLoginRequest))
@@ -74,6 +79,7 @@ public class AppUserService {
         }
 
         BasicCache.CACHED_AUTH.put(userLoginRequest.getUsername(), jwt.get());
+
         return response.body();
     }
 
